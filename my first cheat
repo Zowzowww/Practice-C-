@@ -1,0 +1,54 @@
+#include "stdafx.h"
+#include <iostream>
+#include <windows.h>
+ 
+using namespace std;
+ 
+int main()
+{
+ 
+	int intToWrite = 987654;
+	int wpmInt = 0;
+	DWORD processID = NULL;
+ 
+	cout << "Enter the Process ID (in decimal) : ";
+	cin >> dec >> processID;
+ 
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
+ 
+	if (hProcess == NULL) // failed to get a handle
+	{
+		cout << "OpenProcess failed. GetLastError = " << dec << GetLastError() << endl;
+		system("pause > nul");
+		return EXIT_FAILURE;
+	}
+ 
+	uintptr_t memoryAddress = 0x0;
+	cout << "Memory address of the integer to write (in hexadecimal) : 0x";
+	cin >> hex >> memoryAddress;
+	cout << "Writing 0x" << hex << uppercase << memoryAddress << " ..." << endl;
+ 
+	BOOL wpmReturn = WriteProcessMemory(hProcess, (LPVOID)memoryAddress, &intToWrite, sizeof(int), NULL);
+	if (wpmReturn == FALSE)
+	{
+		cout << "WriteProcessMemory failed. GetLastError = " << dec << GetLastError() << endl;
+		system("pause > nul");
+		return EXIT_FAILURE;
+	}
+ 
+	cout << "RPM succeeded. Overwritten successfully.";
+ 
+	BOOL closeHandleReturn = CloseHandle(hProcess);
+	if (closeHandleReturn == FALSE)
+	{
+		cout << "CloseHandle failed. GetLastError = " << dec << GetLastError() << endl;
+		system("pause > nul");
+		return EXIT_FAILURE;
+	}
+	cout << "CloseHandle succeeded. (No risk of resource leak)" << endl;
+ 
+	cout << "Press ENTER to exit" << endl;
+	system("pause > nul");
+ 
+	return 0;
+}
